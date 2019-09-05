@@ -9,6 +9,7 @@ import VREffect from 'three/examples/js/effects/VREffect.js';
 import OrbitOrientationContols from './orbit-orientation-controls.js';
 import * as utils from './utils';
 import CanvasPlayerControls from './canvas-player-controls';
+import './HelperCanvas';
 
 // import controls so they get regisetered with videojs
 import './cardboard-button';
@@ -59,9 +60,8 @@ class VR extends Plugin {
       player.errors({errors});
     }
 
-    // IE 11 does not support enough webgl to be supported
     // older safari does not support cors, so it wont work
-    if (videojs.browser.IE_VERSION || !utils.corsSupport) {
+    if (videojs.browser.IS_ANY_SAFARI && !utils.corsSupport) {
       // if a player triggers error before 'loadstart' is fired
       // video.js will reset the error overlay
       this.player_.on('loadstart', () => {
@@ -70,11 +70,15 @@ class VR extends Plugin {
       return;
     }
 
-    this.polyfill_ = new WebVRPolyfill({
+    // IE 11 does not support enough webgl to be supported for WebV
+    // However we can support it via canvas rendering.
+    if (!videojs.browser.IE_VERSION) {
+      this.polyfill_ = new WebVRPolyfill({
       // do not show rotate instructions
-      ROTATE_INSTRUCTIONS_DISABLED: true
-    });
-    this.polyfill_ = new WebVRPolyfill();
+        ROTATE_INSTRUCTIONS_DISABLED: true
+      });
+      this.polyfill_ = new WebVRPolyfill();
+    }
 
     this.handleVrDisplayActivate_ = videojs.bind(this, this.handleVrDisplayActivate_);
     this.handleVrDisplayDeactivate_ = videojs.bind(this, this.handleVrDisplayDeactivate_);
@@ -529,6 +533,10 @@ void main() {
       }
     }
 
+    if (this.helperCanvas && this.videoTexture) {
+      this.helperCanvas.update();
+    }
+
     this.controls3d.update();
     this.effect.render(this.scene, this.camera);
 
@@ -591,7 +599,18 @@ void main() {
     }
 
     this.scene = new THREE.Scene();
-    this.videoTexture = new THREE.VideoTexture(this.getVideoEl_());
+
+    // IE11 can be supported with HelperCanvas.
+    if (videojs.browser.IE_VERSION) {
+      this.helperCanvas = this.player_.addChild('HelperCanvas', {
+        video: this.getVideoEl_()
+      });
+      const context = this.helperCanvas.el();
+
+      this.videoTexture = new THREE.Texture(context);
+    } else {
+      this.videoTexture = new THREE.VideoTexture(this.getVideoEl_());
+    }
 
     // shared regardless of wether VideoTexture is used or
     // an image canvas is used
@@ -707,6 +726,26 @@ void main() {
       });
     } else if (window.navigator.getVRDevices) {
       this.triggerError_({code: 'web-vr-out-of-date', dismiss: false});
+    } else if (videojs.browser.IE_VERSION) {
+      // IE11 support via HelperCanvas.
+      if (!this.controls3d) {
+        const options = {
+          camera: this.camera,
+          canvas: this.renderedCanvas,
+          // check if its a half sphere view projection
+          halfView: this.currentProjection_ === '180',
+          orientation: videojs.browser.IS_IOS || videojs.browser.IS_ANDROID || false
+        };
+
+        if (this.options_.motionControls === false) {
+          options.orientation = false;
+        }
+
+        this.controls3d = new OrbitOrientationContols(options);
+        this.canvasPlayerControls = new CanvasPlayerControls(this.player_, this.renderedCanvas);
+      }
+
+      this.animationFrameId_ = this.requestAnimationFrame(this.animate_);
     } else {
       this.triggerError_({code: 'web-vr-not-supported', dismiss: false});
     }
