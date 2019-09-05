@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import OrbitControls from 'three/examples/js/controls/OrbitControls.js';
 import DeviceOrientationControls from 'three/examples/js/controls/DeviceOrientationControls.js';
+import Hammer from 'hammerjs';
 
 /**
  * Convert a quaternion to an angle
@@ -45,7 +46,7 @@ class OrbitOrientationControls {
     this.domElement = options.canvas;
     this.orbit = new OrbitControls(this.object, this.domElement);
 
-    this.speed = 0.5;
+    this.speed = options.rotateSpeed || 0.25;
     this.orbit.target.set(0, 0, -1);
     this.orbit.enableZoom = false;
     this.orbit.enablePan = false;
@@ -62,6 +63,42 @@ class OrbitOrientationControls {
       this.orbit.minAzimuthAngle = -Math.PI / 4;
       this.orbit.maxAzimuthAngle = Math.PI / 4;
     }
+
+    this.minFov = options.minFov || 30;
+    this.maxFov = options.maxFov || 120;
+    this.zoomSpeed = options.zoomSpeed || 2.0;
+
+    this.onWheel = (e) => {
+      const delta = e.deltaY / 100 * this.zoomSpeed;
+      const fov = Math.max(
+        this.minFov,
+        Math.min(this.maxFov, options.camera.fov + delta)
+      );
+
+      options.camera.fov = fov;
+      options.camera.updateProjectionMatrix();
+    };
+    this.domElement.addEventListener('wheel', this.onWheel, false);
+
+    this.pinchStart = (e) => {
+      this.fovStart = options.camera.fov;
+    };
+    this.pinchChange = (e) => {
+      const fov = Math.max(
+        this.minFov,
+        Math.min(this.maxFov, this.fovStart / e.scale)
+      );
+
+      options.camera.fov = fov;
+      options.camera.updateProjectionMatrix();
+    };
+
+    // Hammer will make the dom element capture touch on page. No need for CSS trick.
+    this.domTouch = new Hammer(this.domElement);
+    this.domTouch.get('pinch').set({ enable: true });
+    this.domTouch.on('pinchstart', this.pinchStart);
+    this.domTouch.on('pinchin', this.pinchChange);
+    this.domTouch.on('pinchout', this.pinchChange);
   }
 
   update() {
@@ -93,6 +130,8 @@ class OrbitOrientationControls {
 
   dispose() {
     this.orbit.dispose();
+    this.domElement.removeEventListener('wheel', this.onWheel);
+    this.domTouch.dispose();
 
     if (this.orientation) {
       this.orientation.dispose();
