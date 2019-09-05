@@ -4,8 +4,6 @@ import document from 'global/document';
 import WebVRPolyfill from 'webvr-polyfill';
 import videojs from 'video.js';
 import * as THREE from 'three';
-import VRControls from 'three/examples/js/controls/VRControls.js';
-import VREffect from 'three/examples/js/effects/VREffect.js';
 import OrbitOrientationContols from './orbit-orientation-controls.js';
 import * as utils from './utils';
 import CanvasPlayerControls from './canvas-player-controls';
@@ -128,7 +126,7 @@ class VR extends Plugin {
       return this.changeProjection_('NONE');
     } else if (projection === '360') {
       this.movieGeometry = new THREE.SphereBufferGeometry(256, 32, 32);
-      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, overdraw: true, side: THREE.BackSide });
+      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.BackSide });
 
       this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
       this.movieScreen.position.set(position.x, position.y, position.z);
@@ -154,7 +152,7 @@ class VR extends Plugin {
       }
 
       this.movieGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
-      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, overdraw: true, side: THREE.BackSide });
+      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.BackSide });
 
       this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
       this.movieScreen.scale.x = -1;
@@ -180,7 +178,7 @@ class VR extends Plugin {
       }
 
       this.movieGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
-      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, overdraw: true, side: THREE.BackSide });
+      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.BackSide });
 
       this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
       this.movieScreen.scale.x = -1;
@@ -190,7 +188,7 @@ class VR extends Plugin {
       this.scene.add(this.movieScreen);
     } else if (projection === '360_CUBE') {
       this.movieGeometry = new THREE.BoxGeometry(256, 256, 256);
-      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, overdraw: true, side: THREE.BackSide });
+      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.BackSide });
 
       const left = [new THREE.Vector2(0, 0.5), new THREE.Vector2(0.333, 0.5), new THREE.Vector2(0.333, 1), new THREE.Vector2(0, 1)];
       const right = [new THREE.Vector2(0.333, 0.5), new THREE.Vector2(0.666, 0.5), new THREE.Vector2(0.666, 1), new THREE.Vector2(0.333, 1)];
@@ -238,10 +236,7 @@ class VR extends Plugin {
       }
 
       this.movieGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
-      this.movieMaterial = new THREE.MeshBasicMaterial({
-        map: this.videoTexture,
-        overdraw: true
-      });
+      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture });
       this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
       // display in left eye only
       this.movieScreen.layers.set(1);
@@ -260,10 +255,7 @@ class VR extends Plugin {
       }
 
       this.movieGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
-      this.movieMaterial = new THREE.MeshBasicMaterial({
-        map: this.videoTexture,
-        overdraw: true
-      });
+      this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture });
       this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
       // display in right eye only
       this.movieScreen.layers.set(2);
@@ -276,7 +268,7 @@ class VR extends Plugin {
 
         this.movieGeometry = new THREE.BoxGeometry(256, 256, 256);
         this.movieMaterial = new THREE.ShaderMaterial({
-          overdraw: true, side: THREE.BackSide,
+          side: THREE.BackSide,
           uniforms: {
             mapped: {value: this.videoTexture},
             mapMatrix: {value: mapMatrix},
@@ -528,27 +520,19 @@ void main() {
       return;
     }
 
+    let doRender = false;
+
+    doRender |= !this.player_.paused() && this.player_.currentTime() > 0;
+    doRender |= this.player_.seeking();
+    doRender |= this.canvasPlayerControls.userInteracting;
+
     // Optimize redraw requests to only happen on playback or user interaction.
-    if (!(
-      !this.player_.paused() ||
-      !this.player_.seeking() ||
-      this.canvasPlayerControls.userInteracting)) {
+    if (!doRender) {
       this.animationFrameId_ = this.requestAnimationFrame(this.animate_);
       return;
     }
 
-    if (this.getVideoEl_().readyState === this.getVideoEl_().HAVE_ENOUGH_DATA) {
-      if (this.videoTexture) {
-        this.videoTexture.needsUpdate = true;
-      }
-    }
-
-    if (this.helperCanvas && this.videoTexture) {
-      this.helperCanvas.update();
-    }
-
-    this.controls3d.update();
-    this.effect.render(this.scene, this.camera);
+    this.render_();
 
     if (window.navigator.getGamepads) {
       // Grab all gamepads
@@ -576,11 +560,25 @@ void main() {
     this.animationFrameId_ = this.requestAnimationFrame(this.animate_);
   }
 
+  render_() {
+    if (this.getVideoEl_().readyState === this.getVideoEl_().HAVE_ENOUGH_DATA) {
+      if (this.videoTexture) {
+        this.videoTexture.needsUpdate = true;
+      }
+    }
+
+    if (this.helperCanvas && this.videoTexture) {
+      this.helperCanvas.update();
+    }
+
+    this.controls3d.update();
+    this.renderer.render(this.scene, this.camera);
+  }
+
   handleResize_() {
     const width = this.player_.currentWidth();
     const height = this.player_.currentHeight();
 
-    this.effect.setSize(width, height, false);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
   }
@@ -654,11 +652,18 @@ void main() {
     }
 
     this.camera.position.set(0, 0, 0);
-    this.renderer = new THREE.WebGLRenderer({
+    const renderer = new THREE.WebGLRenderer({
       devicePixelRatio: window.devicePixelRatio,
       alpha: false,
       clearColor: 0xffffff,
       antialias: true
+    });
+
+    this.renderer = renderer;
+    this.player.one('loadeddata', () => {
+      setTimeout(() => {
+        this.render_();
+      }, 100, this);
     });
 
     const webglContext = this.renderer.getContext('webgl');
@@ -677,9 +682,6 @@ void main() {
     };
 
     this.renderer.setSize(this.player_.currentWidth(), this.player_.currentHeight(), false);
-    this.effect = new VREffect(this.renderer);
-
-    this.effect.setSize(this.player_.currentWidth(), this.player_.currentHeight(), false);
     this.vrDisplay = null;
 
     // Previous timestamps for gamepad updates
@@ -704,14 +706,7 @@ void main() {
           // Native WebVR Head Mounted Displays (HMDs) like the HTC Vive
           // also need the cardboard button to enter fully immersive mode
           // so, we want to add the button if we're not polyfilled.
-          if (!this.vrDisplay.isPolyfilled) {
-            this.log('Real HMD found using VRControls', this.vrDisplay);
-            this.addCardboardButton_();
-
-            // We use VRControls here since we are working with an HMD
-            // and we only want orientation controls.
-            this.controls3d = new VRControls(this.camera);
-          }
+          // TODO: Investigate the WebVR module in Three.
         }
 
         if (!this.controls3d) {
@@ -794,11 +789,6 @@ void main() {
     if (this.canvasPlayerControls) {
       this.canvasPlayerControls.dispose();
       this.canvasPlayerControls = null;
-    }
-
-    if (this.effect) {
-      this.effect.dispose();
-      this.effect = null;
     }
 
     window.removeEventListener('resize', this.handleResize_, true);

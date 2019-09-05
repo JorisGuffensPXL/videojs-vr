@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import OrbitControls from 'three/examples/js/controls/OrbitControls.js';
-import DeviceOrientationControls from 'three/examples/js/controls/DeviceOrientationControls.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { DeviceOrientationControls } from 'three/examples/jsm/controls/DeviceOrientationControls.js';
 import Hammer from 'hammerjs';
 
 /**
@@ -131,7 +131,7 @@ class OrbitOrientationControls {
   dispose() {
     this.orbit.dispose();
     this.domElement.removeEventListener('wheel', this.onWheel);
-    this.domTouch.dispose();
+    this.domTouch.destroy();
 
     if (this.orientation) {
       this.orientation.dispose();
