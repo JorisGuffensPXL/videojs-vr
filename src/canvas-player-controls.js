@@ -46,6 +46,7 @@ class CanvasPlayerControls extends videojs.EventTarget {
     this.canvas.addEventListener('touchend', this.onMoveEnd);
 
     this.shouldTogglePlay = false;
+    this.userInteracting = false;
   }
 
   togglePlay() {
@@ -63,14 +64,17 @@ class CanvasPlayerControls extends videojs.EventTarget {
     // toggle play.
     if (!this.player.controls() || (e.type === 'mousedown' && !videojs.dom.isSingleLeftClick(e))) {
       this.shouldTogglePlay = false;
+      this.userInteracting = false;
       return;
     }
 
     this.shouldTogglePlay = true;
+    this.userInteracting = true;
     this.touchMoveCount_ = 0;
   }
 
   onMoveEnd(e) {
+    this.userInteracting = false;
     if (!this.shouldTogglePlay) {
       return;
     }

@@ -527,6 +527,16 @@ void main() {
     if (!this.initialized_) {
       return;
     }
+
+    // Optimize redraw requests to only happen on playback or user interaction.
+    if (!(
+      !this.player_.paused() ||
+      !this.player_.seeking() ||
+      this.canvasPlayerControls.userInteracting)) {
+      this.animationFrameId_ = this.requestAnimationFrame(this.animate_);
+      return;
+    }
+
     if (this.getVideoEl_().readyState === this.getVideoEl_().HAVE_ENOUGH_DATA) {
       if (this.videoTexture) {
         this.videoTexture.needsUpdate = true;
@@ -711,6 +721,7 @@ void main() {
             canvas: this.renderedCanvas,
             // check if its a half sphere view projection
             halfView: this.currentProjection_ === '180',
+            // TODO: Edge in fact supports orientation. Need to test.
             orientation: videojs.browser.IS_IOS || videojs.browser.IS_ANDROID || false
           };
 
