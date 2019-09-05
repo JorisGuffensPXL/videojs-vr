@@ -85,7 +85,7 @@
     "@babel/runtime": "^7.5.5",
     "global": "^4.4.0",
     "hammerjs": "^2.0.8",
-    "three": "~0.93.0",
+    "three": "0.93.0",
     "video.js": "^6 || ^7",
     "webvr-polyfill": "0.10.6"
   },
