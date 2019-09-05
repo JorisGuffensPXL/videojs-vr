@@ -18,6 +18,10 @@
     {
       "name": "Brandon Casey",
       "email": "branonocasey@gmail.com"
+    },
+    {
+      "name": "Mikael Lavi",
+      "email": "mikael.lavi@gmail.com"
     }
   ],
   "license": "Apache-2.0",
