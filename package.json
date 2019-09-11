@@ -53,7 +53,7 @@
     "version": "is-prerelease || npm run update-changelog && git add CHANGELOG.md",
     "update-changelog": "conventional-changelog -p videojs -i CHANGELOG.md -s",
     "watch": "npm-run-all -p watch:*",
-    "watch:js": "npm run build:js -- -w",
+    "watch:js": "npm run build:js -- -m inline -w",
     "watch:css": "npm run build:css -- -w"
   },
   "keywords": [
@@ -93,15 +93,15 @@
     "@videojs/generator-helpers": "~1.2.0",
     "jsdoc": "BrandonOCasey/jsdoc#feat/plugin-from-cli",
     "karma": "^4.0.0",
+    "node-sass": "^4.12.0",
     "rollup": "^1.12.0",
+    "rollup-plugin-re": "^1.0.7",
     "sinon": "^7.2.2",
     "videojs-generate-karma-config": "~5.3.1",
     "videojs-generate-rollup-config": "~5.0.1",
     "videojs-generator-verify": "~2.0.0",
     "videojs-languages": "^2.0.0",
-    "videojs-standard": "^8.0.3",
-    "node-sass": "^4.12.0",
-    "rollup-plugin-re": "^1.0.7"
+    "videojs-standard": "^8.0.3"
   },
   "browserslist": [
     "defaults",
