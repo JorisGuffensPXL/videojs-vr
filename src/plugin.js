@@ -567,10 +567,6 @@ void main() {
       }
     }
 
-    if (this.helperCanvas && this.videoTexture) {
-      this.helperCanvas.update();
-    }
-
     this.controls3d.update();
     this.renderer.render(this.scene, this.camera);
   }
@@ -613,9 +609,7 @@ void main() {
       this.helperCanvas = this.player_.addChild('HelperCanvas', {
         video: this.getVideoEl_()
       });
-      const context = this.helperCanvas.el();
-
-      this.videoTexture = new THREE.Texture(context);
+      this.videoTexture = this.helperCanvas.texture;
     } else {
       this.videoTexture = new THREE.VideoTexture(this.getVideoEl_());
     }
@@ -733,7 +727,7 @@ void main() {
     } else if (window.navigator.getVRDevices) {
       this.triggerError_({code: 'web-vr-out-of-date', dismiss: false});
     } else if (videojs.browser.IE_VERSION) {
-      // IE11 support via HelperCanvas.
+      // With IE11 supported we need to create the controls for that too.
       if (!this.controls3d) {
         const options = {
           camera: this.camera,
