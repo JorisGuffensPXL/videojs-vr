@@ -39,7 +39,7 @@
     "build-test": "npm-run-all -s clean \"build:js -- --environment TEST_BUNDLE_ONLY\"",
     "build-prod": "npm-run-all -s clean \"build:* -- --environment NO_TEST_BUNDLE\"",
     "build": "npm-run-all -s clean -p build:*",
-    "build:js": "rollup -c scripts/rollup.config.js",
+    "build:js": "rollup -m -c scripts/rollup.config.js",
     "build:css": "node-sass src/plugin.scss dist/videojs-vr.css --output-style=compressed --linefeed=lf",
     "clean": "shx rm -rf ./dist ./test/dist && shx mkdir -p ./dist ./test/dist",
     "lint": "vjsstandard",
@@ -84,7 +84,6 @@
   "dependencies": {
     "@babel/runtime": "^7.5.5",
     "global": "^4.4.0",
-    "hammerjs": "^2.0.8",
     "three": "^0.108.0",
     "video.js": "^6 || ^7",
     "webvr-polyfill": "0.10.6"

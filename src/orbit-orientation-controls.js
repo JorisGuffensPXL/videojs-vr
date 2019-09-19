@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { DeviceOrientationControls } from 'three/examples/jsm/controls/DeviceOrientationControls.js';
-import Hammer from 'hammerjs';
 
 /**
  * Convert a quaternion to an angle
@@ -79,26 +78,6 @@ class OrbitOrientationControls {
       options.camera.updateProjectionMatrix();
     };
     this.domElement.addEventListener('wheel', this.onWheel, false);
-
-    this.pinchStart = (e) => {
-      this.fovStart = options.camera.fov;
-    };
-    this.pinchChange = (e) => {
-      const fov = Math.max(
-        this.minFov,
-        Math.min(this.maxFov, this.fovStart / e.scale)
-      );
-
-      options.camera.fov = fov;
-      options.camera.updateProjectionMatrix();
-    };
-
-    // Hammer will make the dom element capture touch on page. No need for CSS trick.
-    this.domTouch = new Hammer(this.domElement);
-    this.domTouch.get('pinch').set({ enable: true });
-    this.domTouch.on('pinchstart', this.pinchStart);
-    this.domTouch.on('pinchin', this.pinchChange);
-    this.domTouch.on('pinchout', this.pinchChange);
   }
 
   update() {
@@ -131,7 +110,6 @@ class OrbitOrientationControls {
   dispose() {
     this.orbit.dispose();
     this.domElement.removeEventListener('wheel', this.onWheel);
-    this.domTouch.destroy();
 
     if (this.orientation) {
       this.orientation.dispose();
