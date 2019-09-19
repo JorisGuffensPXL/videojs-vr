@@ -45,7 +45,8 @@ class HelperCanvas extends Component {
 
     this.texture_.generateMipmaps = false;
     this.texture_.onUpdate = () => {
-      if (this.video.readyState >= this.video.HAVE_CURRENT_DATA) {
+      if (this.video.readyState >= this.video.HAVE_CURRENT_DATA ||
+          this.player_.seeking()) {
         this.context.drawImage(this.video, 0, 0, this.width, this.height);
         this.needsUpdate = true;
       }

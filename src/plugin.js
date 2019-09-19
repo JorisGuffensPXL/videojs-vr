@@ -523,7 +523,6 @@ void main() {
     let doRender = false;
 
     doRender |= !this.player_.paused() && this.player_.currentTime() > 0;
-    doRender |= this.player_.seeking();
     doRender |= this.canvasPlayerControls.userInteracting;
 
     // Optimize redraw requests to only happen on playback or user interaction.
@@ -561,8 +560,8 @@ void main() {
   }
 
   render_() {
-    if (this.getVideoEl_().readyState === this.getVideoEl_().HAVE_ENOUGH_DATA) {
-      if (this.videoTexture) {
+    if (this.getVideoEl_().readyState >= this.getVideoEl_().HAVE_CURRENT_DATA) {
+      if (this.videoTexture !== void 0) {
         this.videoTexture.needsUpdate = true;
       }
     }
