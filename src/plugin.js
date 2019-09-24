@@ -524,6 +524,7 @@ void main() {
 
     doRender |= !this.player_.paused() && this.player_.currentTime() > 0;
     doRender |= this.canvasPlayerControls.userInteracting;
+    doRender |= this.camera.dirty;
 
     // Optimize redraw requests to only happen on playback or user interaction.
     if (!doRender) {
@@ -560,14 +561,18 @@ void main() {
   }
 
   render_() {
-    if (this.getVideoEl_().readyState >= this.getVideoEl_().HAVE_CURRENT_DATA) {
+    if (this.video.readyState >= this.videoEnoughData) {
       if (this.videoTexture !== void 0) {
         this.videoTexture.needsUpdate = true;
       }
     }
 
-    this.controls3d.update();
+    if (this.userInteracting) {
+      this.controls3d.update();
+    }
+
     this.renderer.render(this.scene, this.camera);
+    delete this.camera.dirty;
   }
 
   handleResize_() {
@@ -576,6 +581,7 @@ void main() {
 
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
+    this.camera.dirty = true;
   }
 
   setProjection(projection) {
@@ -619,6 +625,12 @@ void main() {
     this.videoTexture.minFilter = THREE.LinearFilter;
     this.videoTexture.magFilter = THREE.LinearFilter;
     this.videoTexture.format = THREE.RGBFormat;
+
+    this.video = this.getVideoEl_();
+    this.videoEnoughData = this.video.HAVE_CURRENT_DATA;
+    if (videojs.browser.IS_CHROME || videojs.browser.IS_EDGE || videojs.browser.IE_VERSION) {
+      this.videoEnoughData = this.video.HAVE_METADATA;
+    }
 
     this.changeProjection_(this.currentProjection_);
 
