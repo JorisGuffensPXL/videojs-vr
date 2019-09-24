@@ -67,17 +67,18 @@ class OrbitOrientationControls {
     this.maxFov = options.maxFov || 120;
     this.zoomSpeed = options.zoomSpeed || 2.0;
 
-    this.onWheel = (e) => {
-      const delta = e.deltaY / 100 * this.zoomSpeed;
-      const fov = Math.max(
-        this.minFov,
-        Math.min(this.maxFov, options.camera.fov + delta)
-      );
+    // this.onWheel = (e) => {
+    //   const delta = e.deltaY / 100 * this.zoomSpeed;
+    //   const fov = Math.max(
+    //     this.minFov,
+    //     Math.min(this.maxFov, options.camera.fov + delta)
+    //   );
 
-      options.camera.fov = fov;
-      options.camera.updateProjectionMatrix();
-    };
-    this.domElement.addEventListener('wheel', this.onWheel, false);
+    //   options.camera.fov = fov;
+    //   options.camera.updateProjectionMatrix();
+    //   options.camera.dirty = true;
+    // };
+    // this.domElement.addEventListener('wheel', this.onWheel, false);
   }
 
   update() {
@@ -109,7 +110,6 @@ class OrbitOrientationControls {
 
   dispose() {
     this.orbit.dispose();
-    this.domElement.removeEventListener('wheel', this.onWheel);
 
     if (this.orientation) {
       this.orientation.dispose();
