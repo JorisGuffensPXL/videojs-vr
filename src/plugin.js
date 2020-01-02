@@ -5,6 +5,7 @@ import WebVRPolyfill from 'webvr-polyfill';
 import videojs from 'video.js';
 import * as THREE from 'three';
 import OrbitOrientationContols from './orbit-orientation-controls.js';
+// import RotateContols from './RotateControls.js';
 import * as utils from './utils';
 import CanvasPlayerControls from './canvas-player-controls';
 import './HelperCanvas';
@@ -49,6 +50,7 @@ class VR extends Plugin {
 
     this.options_ = settings;
     this.player_ = player;
+    this.euler_ = new THREE.Euler(0, 0, 0, 'YXZ');
     this.bigPlayButtonIndex_ = player.children().indexOf(player.getChild('BigPlayButton')) || 0;
 
     // custom videojs-errors integration boolean
@@ -661,7 +663,8 @@ void main() {
       devicePixelRatio: window.devicePixelRatio,
       alpha: false,
       clearColor: 0xffffff,
-      antialias: true
+      antialias: true,
+      preserveDrawingBuffer: true
     });
 
     this.renderer = renderer;
@@ -854,6 +857,44 @@ void main() {
   polyfillVersion() {
     return WebVRPolyfill.version;
   }
+
+  get yaw() {
+    this.euler_.setFromQuaternion(this.camera.quaternion);
+    return THREE.Math.radToDeg(this.euler_.y);
+  }
+  set yaw(angle) {
+    this.euler_.setFromQuaternion(this.camera.quaternion);
+    this.euler_.y = THREE.Math.degToRad(angle);
+    this.camera.quaternion.setFromEuler(this.euler_);
+    this.camera.getWorldDirection(this.controls3d.orbit.target);
+  }
+
+  get pitch() {
+    this.euler_.setFromQuaternion(this.camera.quaternion);
+    return THREE.Math.radToDeg(this.euler_.x);
+  }
+  set pitch(angle) {
+    this.euler_.setFromQuaternion(this.camera.quaternion);
+    this.euler_.x = THREE.Math.degToRad(angle);
+    this.camera.quaternion.setFromEuler(this.euler_);
+    this.camera.getWorldDirection(this.controls3d.orbit.target);
+  }
+
+  get hfov() {
+    return this.camera.fov;
+  }
+  set hfov(angle) {
+    this.camera.fov = angle;
+    this.camera.updateProjectionMatrix();
+  }
+
+  get time() {
+    return this.player_.currentTime();
+  }
+  set time(value) {
+    this.player.currentTime(value);
+  }
+
 }
 
 VR.prototype.setTimeout = Component.prototype.setTimeout;
