@@ -113,6 +113,10 @@ class VR extends Plugin {
     }
 
     const position = {x: 0, y: 0, z: 0 };
+    const rotation = new THREE.Matrix4();
+    // rotation.makeScale(-1, 1, 1);
+
+    rotation.makeRotationY(-Math.PI);
 
     if (this.scene) {
       this.scene.remove(this.movieScreen);
@@ -127,14 +131,23 @@ class VR extends Plugin {
       }
       return this.changeProjection_('NONE');
     } else if (projection === '360') {
+
+      /**
+       * New stuff is for the movieGeometry.
+       * - Make a new geometry object to be rotated instead of the screen, so the geometry rotates.
+       * - Screen rotation feels like to be the opposite of what is needed.
+       * - Quaternion movements were not properly available on screen, so aim for geoemtry instead that can handle it.
+       */
+
       this.movieGeometry = new THREE.SphereBufferGeometry(256, 32, 32);
       this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.BackSide });
+      this.movieGeometry.applyMatrix4(rotation);
 
       this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
       this.movieScreen.position.set(position.x, position.y, position.z);
 
-      this.movieScreen.scale.x = -1;
-      this.movieScreen.quaternion.setFromAxisAngle({x: 0, y: 1, z: 0}, -Math.PI / 2);
+      // this.movieScreen.scale.x = -1;
+      // this.movieScreen.quaternion.setFromAxisAngle({x: 0, y: 1, z: 0}, -Math.PI / 2);
       this.scene.add(this.movieScreen);
     } else if (projection === '360_LR' || projection === '360_TB') {
       // Left eye view
@@ -188,9 +201,18 @@ class VR extends Plugin {
       // display in right eye only
       this.movieScreen.layers.set(2);
       this.scene.add(this.movieScreen);
+
     } else if (projection === '360_CUBE') {
+      /**
+       * 360 CUBE
+       * 360 CUBE
+       * 360 CUBE
+       */
+
       this.movieGeometry = new THREE.BoxGeometry(256, 256, 256);
       this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.BackSide });
+
+      this.movieGeometry.applyMatrix4(rotation);
 
       const left = [new THREE.Vector2(0, 0.5), new THREE.Vector2(0.333, 0.5), new THREE.Vector2(0.333, 1), new THREE.Vector2(0, 1)];
       const right = [new THREE.Vector2(0.333, 0.5), new THREE.Vector2(0.666, 0.5), new THREE.Vector2(0.666, 1), new THREE.Vector2(0.333, 1)];
@@ -219,12 +241,33 @@ class VR extends Plugin {
       this.movieGeometry.faceVertexUvs[0][10] = [ back[2], back[1], back[3] ];
       this.movieGeometry.faceVertexUvs[0][11] = [ back[1], back[0], back[3] ];
 
-      this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
-      this.movieScreen.position.set(position.x, position.y, position.z);
-      this.movieScreen.rotation.y = -Math.PI;
+      this.movieScreen = new THREE.Group();
+      this.movieScreenObject = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
+      this.movieScreenObject.position.set(position.x, position.y, position.z);
+      // Replaced above with quaternion thingy for geometry. This avoids the rotation on geometry.
+      // this.movieScreen.rotation.y = -Math.PI;
+
+      this.movieScreen.add(this.movieScreenObject);
+
+      const geometry = new THREE.SphereGeometry(128, 12, 12);
+      const red = new THREE.MeshBasicMaterial({color: 0xff0000});
+      const green = new THREE.MeshBasicMaterial({color: 0x00ff00});
+      const blue = new THREE.MeshBasicMaterial({color: 0x0000ff});
+      const sphereR = new THREE.Mesh(geometry, red);
+      const sphereG = new THREE.Mesh(geometry, green);
+      const sphereB = new THREE.Mesh(geometry, blue);
+
+      sphereR.position = {x: 128, y: 0, z: 0 };
+      sphereG.position = {x: 0, y: 128, z: 0 };
+      sphereB.position = {x: 0, y: 0, z: 128 };
+      this.movieScreen.add(sphereR);
+      this.movieScreen.add(sphereG);
+      this.movieScreen.add(sphereB);
 
       this.scene.add(this.movieScreen);
+
     } else if (projection === '180') {
+
       let geometry = new THREE.SphereGeometry(256, 32, 32, Math.PI, Math.PI);
 
       // Left eye view
@@ -269,6 +312,7 @@ class VR extends Plugin {
         const contCorrect = 2;
 
         this.movieGeometry = new THREE.BoxGeometry(256, 256, 256);
+        // this.movieGeometry.applyMatrix4(rotation);
         this.movieMaterial = new THREE.ShaderMaterial({
           side: THREE.BackSide,
           uniforms: {
@@ -362,9 +406,39 @@ void main() {
         this.movieGeometry.faceVertexUvs[0][10] = [ back[2], back[1], back[3] ];
         this.movieGeometry.faceVertexUvs[0][11] = [ back[1], back[0], back[3] ];
 
-        this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
-        this.movieScreen.position.set(position.x, position.y, position.z);
-        this.movieScreen.rotation.y = -Math.PI;
+        this.movieScreen = new THREE.Group();
+        this.movieScreenObject = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
+        this.movieScreenObject.position.set(position.x, position.y, position.z);
+        // Replaced above with quaternion thingy for geometry. This avoids the rotation on geometry.
+        // this.movieScreen.rotation.y = -Math.PI;
+
+        this.movieScreen.add(this.movieScreenObject);
+
+        const geometryS = new THREE.SphereGeometry(12, 12, 12);
+        const geometryB = new THREE.BoxGeometry(12, 12, 12);
+        const red = new THREE.MeshBasicMaterial({color: 0xff0000});
+        const green = new THREE.MeshBasicMaterial({color: 0x00ff00});
+        const blue = new THREE.MeshBasicMaterial({color: 0x0000ff});
+        const sphereR = new THREE.Mesh(geometryS, red);
+        const sphereG = new THREE.Mesh(geometryS, green);
+        const sphereB = new THREE.Mesh(geometryS, blue);
+        const boxR = new THREE.Mesh(geometryB, red);
+        const boxG = new THREE.Mesh(geometryB, green);
+        const boxB = new THREE.Mesh(geometryB, blue);
+
+        sphereR.position.set(128, 0, 0);
+        sphereG.position.set(0, 128, 0);
+        sphereB.position.set(0, 0, 128);
+        boxR.position.set(-128, 0, 0);
+        boxG.position.set(0, -128, 0);
+        boxB.position.set(0, 0, -128);
+        this.movieScreen.add(sphereR);
+        this.movieScreen.add(sphereG);
+        this.movieScreen.add(sphereB);
+        this.movieScreen.add(boxR);
+        this.movieScreen.add(boxG);
+        this.movieScreen.add(boxB);
+
         return this.movieScreen;
       };
 
