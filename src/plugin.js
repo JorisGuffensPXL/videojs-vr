@@ -414,31 +414,6 @@ void main() {
 
         this.movieScreen.add(this.movieScreenObject);
 
-        const geometryS = new THREE.SphereGeometry(12, 12, 12);
-        const geometryB = new THREE.BoxGeometry(12, 12, 12);
-        const red = new THREE.MeshBasicMaterial({color: 0xff0000});
-        const green = new THREE.MeshBasicMaterial({color: 0x00ff00});
-        const blue = new THREE.MeshBasicMaterial({color: 0x0000ff});
-        const sphereR = new THREE.Mesh(geometryS, red);
-        const sphereG = new THREE.Mesh(geometryS, green);
-        const sphereB = new THREE.Mesh(geometryS, blue);
-        const boxR = new THREE.Mesh(geometryB, red);
-        const boxG = new THREE.Mesh(geometryB, green);
-        const boxB = new THREE.Mesh(geometryB, blue);
-
-        sphereR.position.set(128, 0, 0);
-        sphereG.position.set(0, 128, 0);
-        sphereB.position.set(0, 0, 128);
-        boxR.position.set(-128, 0, 0);
-        boxG.position.set(0, -128, 0);
-        boxB.position.set(0, 0, -128);
-        this.movieScreen.add(sphereR);
-        this.movieScreen.add(sphereG);
-        this.movieScreen.add(sphereB);
-        this.movieScreen.add(boxR);
-        this.movieScreen.add(boxG);
-        this.movieScreen.add(boxB);
-
         return this.movieScreen;
       };
 

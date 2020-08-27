@@ -45,7 +45,7 @@
     "lint": "vjsstandard",
     "prepare": "npm-run-all build-prod",
     "prepublishOnly": "vjsverify --verbose",
-    "start": "npm-run-all -p server watch",
+    "start": "npm-run-all -p watch:*",
     "server": "karma start scripts/karma.conf.js --singleRun=false --auto-watch",
     "test": "npm run build-test && karma start scripts/karma.conf.js",
     "posttest": "shx cat test/dist/coverage/text.txt",
@@ -85,7 +85,7 @@
     "@babel/runtime": "^7.5.5",
     "global": "^4.4.0",
     "three": "^0.108.0",
-    "video.js": "^6 || ^7",
+    "video.js": "^7.6.0",
     "webvr-polyfill": "0.10.6"
   },
   "devDependencies": {
