@@ -141,7 +141,7 @@ class VR extends Plugin {
 
       this.movieGeometry = new THREE.SphereBufferGeometry(256, 32, 32);
       this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.BackSide });
-      this.movieGeometry.applyMatrix4(rotation);
+      this.movieGeometry.applyMatrix(rotation);
 
       this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
       this.movieScreen.position.set(position.x, position.y, position.z);
@@ -212,7 +212,7 @@ class VR extends Plugin {
       this.movieGeometry = new THREE.BoxGeometry(256, 256, 256);
       this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.BackSide });
 
-      this.movieGeometry.applyMatrix4(rotation);
+      this.movieGeometry.applyMatrix(rotation);
 
       const left = [new THREE.Vector2(0, 0.5), new THREE.Vector2(0.333, 0.5), new THREE.Vector2(0.333, 1), new THREE.Vector2(0, 1)];
       const right = [new THREE.Vector2(0.333, 0.5), new THREE.Vector2(0.666, 0.5), new THREE.Vector2(0.666, 1), new THREE.Vector2(0.333, 1)];
@@ -312,7 +312,7 @@ class VR extends Plugin {
         const contCorrect = 2;
 
         this.movieGeometry = new THREE.BoxGeometry(256, 256, 256);
-        // this.movieGeometry.applyMatrix4(rotation);
+        // this.movieGeometry.applyMatrix(rotation);
         this.movieMaterial = new THREE.ShaderMaterial({
           side: THREE.BackSide,
           uniforms: {
