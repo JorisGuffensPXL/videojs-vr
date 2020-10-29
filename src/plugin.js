@@ -524,7 +524,7 @@ void main() {
 
     let doRender = false;
 
-    doRender |= !this.player_.paused() && this.player_.currentTime() > 0;
+    doRender |= this.player_.currentTime() > 0;
     doRender |= this.canvasPlayerControls.userInteracting;
     doRender |= this.camera.dirty;
 
