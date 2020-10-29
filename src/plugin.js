@@ -96,7 +96,7 @@ class VR extends Plugin {
         return;
       }
 
-      this.log('video element recycled for this ad, reseting');
+      this.log('video element recycled for this ad, resetting');
       this.reset();
 
       this.one(player, 'playing', this.init);
