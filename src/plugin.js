@@ -658,7 +658,7 @@ void main() {
       this.player_.controlBar.fullscreenToggle.hide();
     }
 
-    this.camera.position.set(0, 0, 0);
+    this.camera.position.set(0, 0, -1);
     const renderer = new THREE.WebGLRenderer({
       devicePixelRatio: window.devicePixelRatio,
       alpha: false,
@@ -858,6 +858,14 @@ void main() {
     return WebVRPolyfill.version;
   }
 
+  lookAt(x, y, z) {
+    const vector = new THREE.Vector3(-x, -y, -z);
+
+    vector.normalize();
+    this.camera.position.set(vector.x, vector.y, vector.z);
+    this.controls3d.orbit.update();
+  }
+
   get yaw() {
     this.euler_.setFromQuaternion(this.camera.quaternion);
     return THREE.Math.radToDeg(this.euler_.y);
@@ -867,6 +875,7 @@ void main() {
     this.euler_.y = THREE.Math.degToRad(angle);
     this.camera.quaternion.setFromEuler(this.euler_);
     this.camera.getWorldDirection(this.controls3d.orbit.target);
+    this.controls3d.orbit.update();
   }
 
   get pitch() {
@@ -878,6 +887,7 @@ void main() {
     this.euler_.x = THREE.Math.degToRad(angle);
     this.camera.quaternion.setFromEuler(this.euler_);
     this.camera.getWorldDirection(this.controls3d.orbit.target);
+    this.controls3d.orbit.update();
   }
 
   get hfov() {
