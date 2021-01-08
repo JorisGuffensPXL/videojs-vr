@@ -127,7 +127,7 @@ class VR extends Plugin {
       }
       return this.changeProjection_('NONE');
     } else if (projection === '360') {
-      this.movieGeometry = new THREE.SphereBufferGeometry(512, 32, 32);
+      this.movieGeometry = new THREE.SphereBufferGeometry(256, 32, 32);
       this.movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.BackSide });
 
       this.movieScreen = new THREE.Mesh(this.movieGeometry, this.movieMaterial);
